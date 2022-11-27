@@ -2,7 +2,7 @@
 var mapSvg, tooltip, mapttstring;
 
 var mapData;
-var popData;
+var animalType, procedures, severity, totals;
 var colorchoice = "orange";
 var drawborder = true;
 var margin = { left: 80, right: 80, top: 50, bottom: 50 },
@@ -16,28 +16,22 @@ document.addEventListener("DOMContentLoaded", function () {
   mapSvg
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
-
-  // make mapsvg 10x bigger
-
   // Load both files before doing anything else
-  Promise.all([d3.json("australia.geojson"), d3.csv("population.csv")]).then(function (
+  getDataandDraw(2017);
+  
+});
+function getDataandDraw(y) {
+  Promise.all([d3.json("australia.geojson"), d3.csv(`at${y}.csv`), d3.csv(`s${y}.csv`), d3.csv(`p${y}.csv`)]).then(function (
     values
   ) {
     mapData = values[0];
-    popData = values[1];
-    // filter map data to only include state with STATE 24
-    // mapData.features = mapData.features.filter(function (d) {
-    //   return d.properties.STATE == 24;
-    // });
-
-    // filter pop data to only include state with STATE 24
-    popData = popData.filter(function (d) {
-      return d["GEO.display-label"] == "Maryland";
-    });
+    animalType = values[1];
+    procedures = values[2];
+    severity = values[3];
+    console.log(animalType);
     drawMap();
   });
-});
-
+}
 // Draw the map in the #map svg
 function drawMap() {
   mapSvg.selectAll("*").remove();
@@ -53,11 +47,27 @@ function drawMap() {
     // make projection bigger
     .scale(700);
   let path = d3.geoPath().projection(projection);
-  let extent = d3.extent(
-    popData,
-    (d) => +d["Density per square mile of land area"]
-  );
+  console.log(animalType)
 
+  // find array where 'ANIMAL TYPE' is 'TOTALS'
+  totals = animalType.find((d) => d["ANIMAL TYPE"] == "TOTALS");
+
+  // convert all numbers on totals to integers
+  for (let key in totals) {
+    if (key != "ANIMAL TYPE") {
+      // remove commas from numbers
+      totals[key] = parseInt(totals[key].replace(/,/g, ""));
+      // if number is NaN, set it to 0
+      if (isNaN(totals[key])) {
+        totals[key] = 0;
+      }
+    }
+  }
+  console.log(totals);
+  // find the extent of the totals
+  let extent = d3.extent(Object.values(totals).slice(1));
+  console.log(extent);
+  // console.log(extent);
   if (colorchoice == "orange") {
     var colorScale = d3.scaleSequential(d3.interpolateOrRd).domain(extent);
   } else {
@@ -90,15 +100,16 @@ function drawMap() {
     //   })[0]["Density per square mile of land area"];
       if (drawborder)
         d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
-    //   tooltip.transition().duration(50).style("opacity", 1);
-    //   mapttstring = `County: ${d.properties.NAME} <br/> Population Density per square mile of land area: ${val}`;
+        console.log(d);
+      mapttstring = `State: ${d.properties.STATE_NAME}`;
+      tooltip.transition().duration(50).style("opacity", 1);
     })
-    // .on("mousemove", function (d, i) {
-    //   tooltip
-    //     .html(mapttstring)
-    //     .style("left", d3.event.pageX + 10 + "px")
-    //     .style("top", d3.event.pageY - 15 + "px");
-    // })
+    .on("mousemove", function (d, i) {
+      tooltip
+        .html(mapttstring)
+        .style("left", d3.event.pageX + 10 + "px")
+        .style("top", d3.event.pageY - 15 + "px");
+    })
     .on("mouseout", function (d, i) {
       d3.select(this)
         .style("stroke", "black")

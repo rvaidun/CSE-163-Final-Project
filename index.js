@@ -1,13 +1,24 @@
-
 var mapSvg, tooltip, mapttstring;
 
 var mapData;
 var animalType, procedures, severity, totals;
 var colorchoice = "orange";
 var drawborder = true;
-var margin = { left: 80, right: 80, top: 50, bottom: 50 },
-  width = 960 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+var margin = { left: 80, right: 80, top: 50, bottom: 50 };
+
+let audict = {
+  Victoria: "VIC",
+  "New South Wales": "NSW",
+  "South Australia": "SA",
+  Tasmania: "TAS",
+  Queensland: "QLD",
+  "Australian Capital Territory": "ACT",
+  "Western Australia": "WA",
+  "Northern Territory": "NT",
+};
+
+(width = 960 - margin.left - margin.right),
+  (height = 500 - margin.top - margin.bottom);
 // This runs when the page is loaded
 document.addEventListener("DOMContentLoaded", function () {
   mapSvg = d3.select("#dataviz");
@@ -18,12 +29,14 @@ document.addEventListener("DOMContentLoaded", function () {
     .attr("height", height + margin.top + margin.bottom);
   // Load both files before doing anything else
   getDataandDraw(2017);
-  
 });
 function getDataandDraw(y) {
-  Promise.all([d3.json("australia.geojson"), d3.csv(`at${y}.csv`), d3.csv(`s${y}.csv`), d3.csv(`p${y}.csv`)]).then(function (
-    values
-  ) {
+  Promise.all([
+    d3.json("australia.geojson"),
+    d3.csv(`at${y}.csv`),
+    d3.csv(`s${y}.csv`),
+    d3.csv(`p${y}.csv`),
+  ]).then(function (values) {
     mapData = values[0];
     animalType = values[1];
     procedures = values[2];
@@ -47,7 +60,7 @@ function drawMap() {
     // make projection bigger
     .scale(700);
   let path = d3.geoPath().projection(projection);
-  console.log(animalType)
+  console.log(animalType);
 
   // find array where 'ANIMAL TYPE' is 'TOTALS'
   totals = animalType.find((d) => d["ANIMAL TYPE"] == "TOTALS");
@@ -65,14 +78,14 @@ function drawMap() {
   }
   console.log(totals);
   // find the extent of the totals
-  let extent = d3.extent(Object.values(totals).slice(1));
-  console.log(extent);
+  // let extent = d3.extent(Object.values(totals).slice(1));
   // console.log(extent);
-  if (colorchoice == "orange") {
-    var colorScale = d3.scaleSequential(d3.interpolateOrRd).domain(extent);
-  } else {
-    var colorScale = d3.scaleSequential(d3.interpolateBlues).domain(extent);
-  }
+  // console.log(extent);
+  // if (colorchoice == "orange") {
+  //   var colorScale = d3.scaleSequential(d3.interpolateOrRd).domain(extent);
+  // } else {
+  //   var colorScale = d3.scaleSequential(d3.interpolateBlues).domain(extent);
+  // }
 
   // draw the map on the #map svg
   let g = mapSvg.append("g");
@@ -86,21 +99,21 @@ function drawMap() {
     })
     .attr("class", "countrymap")
     .style("fill", (d) => {
-    //   let val = popData.filter((p) => {
-    //     return p["GCT_STUB.target-geo-id"] == d.properties.GEO_ID;
-    //   })[0]["Density per square mile of land area"];
-    //   if (isNaN(val)) return "grey";
-    //   return colorScale(val);
-    return "grey";
+      //   let val = popData.filter((p) => {
+      //     return p["GCT_STUB.target-geo-id"] == d.properties.GEO_ID;
+      //   })[0]["Density per square mile of land area"];
+      //   if (isNaN(val)) return "grey";
+      //   return colorScale(val);
+      return "grey";
     })
     .style("stroke", drawborder ? "black" : "none")
     .on("mouseover", function (d, i) {
-    //   let val = popData.filter((p) => {
-    //     return p["GCT_STUB.target-geo-id"] == d.properties.GEO_ID;
-    //   })[0]["Density per square mile of land area"];
+      //   let val = popData.filter((p) => {
+      //     return p["GCT_STUB.target-geo-id"] == d.properties.GEO_ID;
+      //   })[0]["Density per square mile of land area"];
       if (drawborder)
         d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
-        console.log(d);
+      console.log(d);
       mapttstring = `State: ${d.properties.STATE_NAME}`;
       tooltip.transition().duration(50).style("opacity", 1);
     })
@@ -111,15 +124,13 @@ function drawMap() {
         .style("top", d3.event.pageY - 15 + "px");
     })
     .on("mouseout", function (d, i) {
-      d3.select(this)
-        .style("stroke", "black")
-        .style("stroke-width", 1);
+      d3.select(this).style("stroke", "black").style("stroke-width", 1);
       //Makes the new div disappear:
       tooltip.transition().duration("50").style("opacity", 0);
+    })
+    .on("click", function (d, i) {
+      drawPieCharts(d.properties.STATE_NAME);
     });
-  // .on("click", function (d, i) {
-  //   drawLineChart(d.properties.name);
-  // })
 
   // draw the legend for the map
   barWidth = 200;
@@ -174,4 +185,86 @@ function togglecolor() {
 function toggleborder() {
   drawborder = !drawborder;
   drawMap();
+}
+
+function drawPieCharts(state) {
+  // draw a pie chart for the selected state
+  // find the data for the selected state
+
+  // loop though the animalType and save the data for the selected state
+  let stateData = [];
+  // for each animal type in animalType save the data
+  animalType.forEach((d) => {
+    // if the animal type is not 'TOTALS'
+    if (d["ANIMAL TYPE"] == "TOTALS") return;
+    // find the data for the selected state
+    // get the abbreviation for the state
+    let stateAbbr = audict[state];
+    // get the data for the state
+    console.log(d[stateAbbr]);
+    let stateVal = d[stateAbbr];
+    // convert stateval to integer and remove commas
+    stateVal = parseInt(stateVal.replace(/,/g, ""));
+    // if the value is not a number, set it to 0
+    if (isNaN(stateVal)) stateVal = 0;
+    // save the data
+    stateData.push({
+      animal: d["ANIMAL TYPE"],
+      value: stateVal,
+    });
+  });
+  console.log(stateData);
+  // draw pie chart in the #piechart svg
+  // set the dimensions and margins of the graph
+  var width = 1000;
+  var height = 1000;
+  var margin = 40;
+
+  // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
+  var radius = Math.min(width, height) / 5 - margin;
+  var piechartsvg = d3.select("#piecharts");
+  piechartsvg.selectAll("*").remove();
+  piechartsvg = piechartsvg
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+  var colorpie = d3.scaleOrdinal().domain(stateData).range(d3.schemeSet2);
+
+  var pie = d3.pie().value(function (d) {
+    return d.value;
+  });
+
+  var arc_generator = d3.arc().innerRadius(0).outerRadius(radius);
+  console.log();
+  data_ready = pie(stateData);
+  console.log(data_ready);
+  piechartsvg
+    .selectAll("mySlices")
+    .data(data_ready)
+    .enter()
+    .append("path")
+    .attr("d", arc_generator)
+    .attr("fill", function (d) {
+      return colorpie(d.data.animal);
+    })
+    .attr("stroke", "black")
+    .style("stroke-width", "2px")
+    .style("opacity", 0.7);
+
+  piechartsvg
+    .selectAll("mySlices")
+    .data(data_ready)
+    .enter()
+    .append("text")
+    .text(function (d) {
+      return d.data.animal;
+    })
+    .attr("transform", function (d) {
+      return "translate(" + arc_generator.centroid(d) + ")";
+    })
+    .style("text-anchor", "middle")
+    .style("font-size", 17);
 }

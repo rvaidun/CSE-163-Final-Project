@@ -257,6 +257,14 @@ function drawPieCharts(state) {
       d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
       console.log(d);
       mapttstring = `Animal: ${d.data.animal}`;
+      // calculate the percentage of the total
+      let total = 0;
+      stateData.forEach((d) => {
+        total += d.value;
+      });
+      let percent = (d.data.value / total) * 100;
+      mapttstring += `<br/>
+      Percent: ${percent.toFixed(2)}%`;
       tooltip.transition().duration(50).style("opacity", 1);
     })
     .on("mousemove", function (d, i) {

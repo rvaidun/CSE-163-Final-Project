@@ -216,12 +216,12 @@ function drawPieCharts(state) {
   console.log(stateData);
   // draw pie chart in the #piechart svg
   // set the dimensions and margins of the graph
-  var width = 1000;
-  var height = 1000;
+  var width = 500;
+  var height = 500;
   var margin = 40;
 
   // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
-  var radius = Math.min(width, height) / 5 - margin;
+  var radius = Math.min(width, height) / 2 - margin;
   var piechartsvg = d3.select("#piecharts");
   piechartsvg.selectAll("*").remove();
   piechartsvg = piechartsvg

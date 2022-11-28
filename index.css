@@ -10,6 +10,11 @@ div.tooltip {
   }
 body {
     font-family: Sans-serif;
-    font-size: 11px;
+    font-size: 12pt;
     background-color: rgb(153, 205, 153);
-}  
+} 
+/* credits center it horizontally */
+.credits {
+    text-align: center;
+    background-color: lightblue;
+}

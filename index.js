@@ -267,4 +267,24 @@ function drawPieCharts(state) {
     })
     .style("text-anchor", "middle")
     .style("font-size", 17);
+  // if text doesn't fit, move text outside of pie chart and add a line
+  // piechartsvg
+  //   .selectAll("mySlices")
+  //   .data(data_ready)
+  //   .enter()
+  //   .append("text")
+  //   .text(function (d) {
+  //     return d.data.animal;
+  //   })
+  //   .attr("transform", function (d) {
+  //     var pos = arc_generator.centroid(d);
+  //     pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
+  //     return "translate(" + pos + ")";
+  //   }
+  //   )
+  //   .style("text-anchor", function (d) {
+  //     return midAngle(d) < Math.PI ? "start" : "end";
+  //   }
+  //   )
+  //   .style("font-size", 17);
 }

@@ -252,7 +252,24 @@ function drawPieCharts(state) {
     })
     .attr("stroke", "black")
     .style("stroke-width", "2px")
-    .style("opacity", 0.7);
+    .style("opacity", 0.7)
+    .on("mouseover", function (d, i) {
+      d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
+      console.log(d);
+      mapttstring = `Animal: ${d.data.animal}`;
+      tooltip.transition().duration(50).style("opacity", 1);
+    })
+    .on("mousemove", function (d, i) {
+      tooltip
+        .html(mapttstring)
+        .style("left", d3.event.pageX + 10 + "px")
+        .style("top", d3.event.pageY - 15 + "px");
+    })
+    .on("mouseout", function (d, i) {
+      d3.select(this).style("stroke", "black").style("stroke-width", 2);
+      //Makes the new div disappear:
+      tooltip.transition().duration(50).style("opacity", 0);
+    });
 
   piechartsvg
     .selectAll("mySlices")
@@ -260,13 +277,19 @@ function drawPieCharts(state) {
     .enter()
     .append("text")
     .text(function (d) {
+      if (d.endAngle - d.startAngle < 0.1) return "";
       return d.data.animal;
     })
     .attr("transform", function (d) {
+      // return "translate(" + arc_generator.centroid(d) + ")";
+      // if text doesn't fit, don't show it
+      // rotate the text 45 degrees
       return "translate(" + arc_generator.centroid(d) + ")";
     })
     .style("text-anchor", "middle")
-    .style("font-size", 17);
+    .style("font-size", 13);
+  // rotate text to fit
+
   // if text doesn't fit, move text outside of pie chart and add a line
   // piechartsvg
   //   .selectAll("mySlices")

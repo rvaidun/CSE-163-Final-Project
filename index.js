@@ -1,7 +1,7 @@
 var mapSvg, tooltip, mapttstring;
 
 var mapData;
-var animalType, purpose, severity, totals;
+var animalType, procedures, severity, totals;
 var colorchoice = "orange";
 var drawborder = true;
 var margin = { left: 80, right: 80, top: 50, bottom: 50 };
@@ -39,7 +39,7 @@ function getDataandDraw(y) {
   ]).then(function (values) {
     mapData = values[0];
     animalType = values[1];
-    purpose = values[2];
+    procedures = values[2];
     severity = values[3];
     console.log(animalType);
     drawMap();
@@ -188,38 +188,36 @@ function toggleborder() {
 }
 
 function drawPieCharts(state) {
-  // draw three pie charts for the selected state
-  // loop though the csv files and save the data for the selected state
-  let ATData = [];
+  // draw a pie chart for the selected state
+  // find the data for the selected state
+
+  // loop though the animalType and save the data for the selected state
+  let stateData = [];
   let purposeData = [];
   let severityData = [];
-    
-  // get the abbreviation for the state
   let stateAbbr = audict[state];
-    
   // for each animal type in animalType save the data
   animalType.forEach((d) => {
     // if the animal type is not 'TOTALS'
     if (d["ANIMAL TYPE"] == "TOTALS") return;
+    // find the data for the selected state
+    // get the abbreviation for the state
     // get the data for the state
-    console.log(d[stateAbbr]);
     let stateVal = d[stateAbbr];
     // convert stateval to integer and remove commas
     stateVal = parseInt(stateVal.replace(/,/g, ""));
     // if the value is not a number, set it to 0
     if (isNaN(stateVal)) stateVal = 0;
     // save the data
-    ATData.push({
+    stateData.push({
       animal: d["ANIMAL TYPE"],
       value: stateVal,
     });
   });
-    
-  purpose.forEach((d) => {
+  procedures.forEach((d) => {
     // if the purpose is not 'TOTALS'
-    if (d["PURPOSE"] == "TOTALS") return;
+    if (d["SEVERITY OF PROCEDURE"] == "TOTALS") return;
     // get the data for the state
-    console.log(d[stateAbbr]);
     let stateVal = d[stateAbbr];
     // convert stateval to integer and remove commas
     stateVal = parseInt(stateVal.replace(/,/g, ""));
@@ -227,16 +225,15 @@ function drawPieCharts(state) {
     if (isNaN(stateVal)) stateVal = 0;
     // save the data
     purposeData.push({
-      purpose: d["PURPOSE"],
+      animal: d["SEVERITY OF PROCEDURE"],
       value: stateVal,
     });
   });
-  
-   severity.forEach((d) => {
+  severity.forEach((d) => {
+    console.log(d);
     // if the purpose is not 'TOTALS'
-    if (d["SEVERITY"] == "TOTALS") return;
+    if (d["PURPOSE "] == "TOTALS") return;
     // get the data for the state
-    console.log(d[stateAbbr]);
     let stateVal = d[stateAbbr];
     // convert stateval to integer and remove commas
     stateVal = parseInt(stateVal.replace(/,/g, ""));
@@ -244,32 +241,35 @@ function drawPieCharts(state) {
     if (isNaN(stateVal)) stateVal = 0;
     // save the data
     severityData.push({
-      purpose: d["SEVERITY"],
+      animal: d["PURPOSE "],
       value: stateVal,
     });
-  }); 
-
-  console.log(ATData);
-  console.log(purposeData)
-  console.log(severityData)
+  });
+  var piechartdiv = d3.select("#piecharts");
+  piechartdiv.selectAll("*").remove();
+  drawPieChart(piechartdiv, stateData, "Animal");
+  drawPieChart(piechartdiv, purposeData, "Purpose");
+  drawPieChart(piechartdiv, severityData, "Severity");
   // draw pie chart in the #piechart svg
   // set the dimensions and margins of the graph
+}
+
+function drawPieChart(piechartdiv, stateData, n) {
+  console.log(n, stateData);
   var width = 500;
   var height = 500;
   var margin = 40;
 
   // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
   var radius = Math.min(width, height) / 2 - margin;
-  var piechartsvg = d3.select("#piecharts");
-  piechartsvg.selectAll("*").remove();
-  piechartsvg = piechartsvg
+  piechartsvg = piechartdiv
     .append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-  var colorpie = d3.scaleOrdinal().domain(ATData).range(d3.schemeSet2);
+  var colorpie = d3.scaleOrdinal().domain(stateData).range(d3.schemeSet2);
 
   var pie = d3.pie().value(function (d) {
     return d.value;
@@ -277,7 +277,7 @@ function drawPieCharts(state) {
 
   var arc_generator = d3.arc().innerRadius(0).outerRadius(radius);
   console.log();
-  data_ready = pie(ATData);
+  data_ready = pie(stateData);
   console.log(data_ready);
   piechartsvg
     .selectAll("mySlices")
@@ -294,10 +294,10 @@ function drawPieCharts(state) {
     .on("mouseover", function (d, i) {
       d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
       console.log(d);
-      mapttstring = `Animal: ${d.data.animal}`;
+      mapttstring = `${n}: ${d.data.animal}`;
       // calculate the percentage of the total
       let total = 0;
-      ATData.forEach((d) => {
+      stateData.forEach((d) => {
         total += d.value;
       });
       let percent = (d.data.value / total) * 100;
@@ -334,26 +334,4 @@ function drawPieCharts(state) {
     })
     .style("text-anchor", "middle")
     .style("font-size", 13);
-  // rotate text to fit
-
-  // if text doesn't fit, move text outside of pie chart and add a line
-  // piechartsvg
-  //   .selectAll("mySlices")
-  //   .data(data_ready)
-  //   .enter()
-  //   .append("text")
-  //   .text(function (d) {
-  //     return d.data.animal;
-  //   })
-  //   .attr("transform", function (d) {
-  //     var pos = arc_generator.centroid(d);
-  //     pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
-  //     return "translate(" + pos + ")";
-  //   }
-  //   )
-  //   .style("text-anchor", function (d) {
-  //     return midAngle(d) < Math.PI ? "start" : "end";
-  //   }
-  //   )
-  //   .style("font-size", 17);
 }

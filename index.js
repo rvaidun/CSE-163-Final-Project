@@ -303,6 +303,9 @@ function drawPieChart(piechartdiv, stateData, n) {
       let percent = (d.data.value / total) * 100;
       mapttstring += `<br/>
       Percent: ${percent.toFixed(2)}%`;
+      let value = d.data.value.toLocaleString();
+      mapttstring += `<br/>
+      Value: ${value}`;
       tooltip.transition().duration(50).style("opacity", 1);
     })
     .on("mousemove", function (d, i) {
@@ -324,7 +327,8 @@ function drawPieChart(piechartdiv, stateData, n) {
     .append("text")
     .text(function (d) {
       if (d.endAngle - d.startAngle < 0.1) return "";
-      return d.data.animal;
+      let value = d.data.value.toLocaleString();
+      return `${value} ${d.data.animal}`;
     })
     .attr("transform", function (d) {
       // return "translate(" + arc_generator.centroid(d) + ")";

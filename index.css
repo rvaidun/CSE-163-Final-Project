@@ -12,9 +12,27 @@ body {
     font-family: Sans-serif;
     font-size: 12pt;
     background-color: rgb(153, 205, 153);
-} 
+}
+
+/* make .mapslider a flexbox so everything is on the same row */
+.mapslider {
+    display: flex;
+    flex-direction: row;
+}
 /* credits center it horizontally */
 .credits {
     text-align: center;
     background-color: lightblue;
+}
+
+.piecharts {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+/* if the screen is too small then let piecharts become a column */
+@media (max-width: 1500px) {
+    .piecharts {
+        flex-direction: column;
+    }
 }

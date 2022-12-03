@@ -1,10 +1,11 @@
-var mapSvg, tooltip, mapttstring;
+var mapSvg, tooltip, mapttstring, sliderSvg, piechartdiv;
 
 var mapData;
 var animalType, procedures, severity, totals;
 var colorchoice = "orange";
 var drawborder = true;
 var margin = { left: 80, right: 80, top: 50, bottom: 50 };
+var curYear = 2017;
 
 let audict = {
   Victoria: "VIC",
@@ -17,25 +18,29 @@ let audict = {
   "Northern Territory": "NT",
 };
 
-(width = 960 - margin.left - margin.right),
+(width = 510 - margin.left - margin.right),
   (height = 500 - margin.top - margin.bottom);
 // This runs when the page is loaded
 document.addEventListener("DOMContentLoaded", function () {
   mapSvg = d3.select("#dataviz");
   tooltip = d3.select(".tooltip");
+  sliderSvg = d3.select("#slider");
+  piechartdiv = d3.select("#piecharts");
   // set the dimensions of the svg
   mapSvg
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
   // Load both files before doing anything else
-  getDataandDraw(2017);
+  drawSlider();
+
+  getDataandDraw();
 });
 function getDataandDraw(y) {
   Promise.all([
     d3.json("australia.geojson"),
-    d3.csv(`at${y}.csv`),
-    d3.csv(`s${y}.csv`),
-    d3.csv(`p${y}.csv`),
+    d3.csv(`data/Final Project Data - at${curYear}.csv`),
+    d3.csv(`data/Final Project Data - s${curYear}.csv`),
+    d3.csv(`data/Final Project Data - p${curYear}.csv`),
   ]).then(function (values) {
     mapData = values[0];
     animalType = values[1];
@@ -133,44 +138,44 @@ function drawMap() {
     });
 
   // draw the legend for the map
-  barWidth = 200;
-  barHeight = 20;
-  axisScale = d3.scaleLinear().domain(colorScale.domain()).range([10, 210]);
+  // barWidth = 200;
+  // barHeight = 20;
+  // axisScale = d3.scaleLinear().domain(colorScale.domain()).range([10, 210]);
 
-  axisBottom = (g) =>
-    g
-      .attr("class", `x-axis`)
-      .attr("transform", `translate(0,400)`)
-      .call(d3.axisBottom(axisScale).ticks(4).tickSize(-barHeight));
+  // axisBottom = (g) =>
+  //   g
+  //     .attr("class", `x-axis`)
+  //     .attr("transform", `translate(0,400)`)
+  //     .call(d3.axisBottom(axisScale).ticks(4).tickSize(-barHeight));
 
-  const defs = mapSvg.append("defs");
+  // const defs = mapSvg.append("defs");
 
-  const linearGradient = defs
-    .append("linearGradient")
-    .attr("id", "linear-gradient");
+  // const linearGradient = defs
+  //   .append("linearGradient")
+  //   .attr("id", "linear-gradient");
 
-  linearGradient
-    .selectAll("stop")
-    .data(
-      colorScale.ticks().map((t, i, n) => ({
-        offset: `${(100 * i) / n.length}%`,
-        color: colorScale(t),
-      }))
-    )
-    .enter()
-    .append("stop")
-    .attr("offset", (d) => d.offset)
-    .attr("stop-color", (d) => d.color);
+  // linearGradient
+  //   .selectAll("stop")
+  //   .data(
+  //     colorScale.ticks().map((t, i, n) => ({
+  //       offset: `${(100 * i) / n.length}%`,
+  //       color: colorScale(t),
+  //     }))
+  //   )
+  //   .enter()
+  //   .append("stop")
+  //   .attr("offset", (d) => d.offset)
+  //   .attr("stop-color", (d) => d.color);
 
-  mapSvg
-    .append("g")
-    .attr("transform", `translate(0,380)`)
-    .append("rect")
-    .attr("transform", `translate(10, 0)`)
-    .attr("width", 200)
-    .attr("height", barHeight)
-    .style("fill", "url(#linear-gradient)");
-  mapSvg.append("g").call(axisBottom);
+  // mapSvg
+  //   .append("g")
+  //   .attr("transform", `translate(0,380)`)
+  //   .append("rect")
+  //   .attr("transform", `translate(10, 0)`)
+  //   .attr("width", 200)
+  //   .attr("height", barHeight)
+  //   .style("fill", "url(#linear-gradient)");
+  // mapSvg.append("g").call(axisBottom);
 }
 
 function togglecolor() {
@@ -245,7 +250,6 @@ function drawPieCharts(state) {
       value: stateVal,
     });
   });
-  var piechartdiv = d3.select("#piecharts");
   piechartdiv.selectAll("*").remove();
   drawPieChart(piechartdiv, stateData, "Animal");
   drawPieChart(piechartdiv, purposeData, "Purpose");
@@ -338,4 +342,44 @@ function drawPieChart(piechartdiv, stateData, n) {
     })
     .style("text-anchor", "middle")
     .style("font-size", 13);
+}
+
+function drawSlider() {
+  // Time
+  var dataTime = d3.range(0, 5).map(function (d) {
+    return new Date(2013 + d, 1, 1);
+  });
+  console.log(dataTime);
+
+  var sliderTime = d3
+    .sliderBottom()
+    .min(d3.min(dataTime))
+    .max(d3.max(dataTime))
+    .step(1000 * 60 * 60 * 24 * 365)
+    .width(300)
+    .tickFormat(d3.timeFormat("%Y"))
+    .tickValues(dataTime)
+    .default(new Date(curYear, 1, 1))
+    .on("onchange", (val) => {
+      // d3.select("p#value-time").text(d3.timeFormat("%Y")(val));
+      var newcurYear = d3.timeFormat("%Y")(val);
+      if (newcurYear != curYear) {
+        curYear = newcurYear;
+        getDataandDraw();
+        // clear pie chart
+        piechartdiv.selectAll("*").remove();
+      }
+    });
+
+  var gTime = d3
+    .select("div#slider-time")
+    .append("svg")
+    .attr("width", 500)
+    .attr("height", 100)
+    .append("g")
+    .attr("transform", "translate(30,30)");
+
+  gTime.call(sliderTime);
+
+  // d3.select("p#value-time").text(d3.timeFormat("%Y")(sliderTime.value()));
 }

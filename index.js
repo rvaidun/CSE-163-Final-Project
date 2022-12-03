@@ -48,6 +48,7 @@ function getDataandDraw(y) {
     severity = values[3];
     console.log(animalType);
     drawMap();
+    drawCountryPieCharts();
   });
 }
 // Draw the map in the #map svg
@@ -178,6 +179,10 @@ function drawMap() {
   // mapSvg.append("g").call(axisBottom);
 }
 
+function togglePieChart() {
+    drawCountryPieCharts();
+}
+
 function togglecolor() {
   if (colorchoice == "orange") {
     colorchoice = "blue";
@@ -191,6 +196,71 @@ function toggleborder() {
   drawborder = !drawborder;
   drawMap();
 }
+
+function drawCountryPieCharts()
+{
+    let countryDataAT = [];
+    let countryDataProced = [];
+    let countryDataPurp = [];
+    console.log("BROOO");
+    // for each animal in animalType save the data for all of Australia
+    animalType.forEach((d) => {
+      // if the animal type is'TOTALS' exit out of the loop
+      if (d["ANIMAL TYPE"] == "TOTALS") return;
+      // find the total value
+      let totalVal = d["TOTAL"];
+      totalVal = parseInt(totalVal.replace(/,/g, ""));
+      // if the value is not a number, set it to 0
+      if (isNaN(totalVal)) totalVal = 0;
+      countryDataAT.push({
+        animal: d["ANIMAL TYPE"],
+        value: totalVal,
+      });
+    });
+    procedures.forEach((d) => {
+      // if the procedure is 'TOTALS' exit out of the loop
+      if (d["SEVERITY OF PROCEDURE"] == "TOTALS") return;
+      // find the total value
+      let totalVal2 = d["TOTAL"];
+      totalVal2 = parseInt(totalVal2.replace(/,/g, ""));
+      // if the value is not a number, set it to 0
+      if (isNaN(totalVal2)) totalVal2 = 0;
+      countryDataProced.push({
+        animal: d["SEVERITY OF PROCEDURE"],
+        value: totalVal2,
+      });
+    });
+    severity.forEach((d) => {
+    console.log(d);
+    // if the purpose is 'TOTALS'
+    if (d["PURPOSE "] == "TOTALS") return;
+    // find the total value
+    let totalVal3 = d["TOTAL"];
+    totalVal3 = parseInt(totalVal3.replace(/,/g, ""));
+    // if the value is not a number, set it to 0
+    if (isNaN(totalVal3)) totalVal3 = 0;
+    // save the data
+    countryDataPurp.push({
+      animal: d["PURPOSE "],
+      value: totalVal3,
+    });
+  });
+  var piechartdiv = d3.select("#piecharts");
+  piechartdiv.selectAll("*").remove();
+  drawPieChart(piechartdiv, countryDataAT, "Animal");
+  drawPieChart(piechartdiv, countryDataProced, "Purpose");
+  drawPieChart(piechartdiv, countryDataPurp, "Severity");
+  console.log(countryDataAT);
+}
+
+// Add titles for the pie Charts
+const para = document.createElement("p");
+const node = document.createTextNode("This is new.");
+para.appendChild(node);
+
+const element = document.getElementById("div1");
+const child = document.getElementById("p1");
+element.insertBefore(para, child);
 
 function drawPieCharts(state) {
   // draw a pie chart for the selected state

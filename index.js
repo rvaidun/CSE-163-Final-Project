@@ -250,7 +250,7 @@ function drawCountryPieCharts() {
     piechartdiv,
     countryDataAT,
     "Animal",
-    `Animal Type Teset in Australia in ${curYear}`
+    `Animal Type Tested in Australia in ${curYear}`
   );
   drawPieChart(
     piechartdiv,

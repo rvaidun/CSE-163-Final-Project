@@ -1,11 +1,11 @@
 var mapSvg, tooltip, mapttstring, sliderSvg, piechartdiv;
 
 var mapData;
-var animalType, procedures, severity, totals;
+var animalType, procedures, severity, totals, totals2;
 var colorchoice = "orange";
 var drawborder = true;
 var margin = { left: 80, right: 80, top: 50, bottom: 50 };
-var curYear = 2017;
+var curYear = 2015;
 
 let audict = {
   Victoria: "VIC",
@@ -46,7 +46,6 @@ function getDataandDraw(y) {
     animalType = values[1];
     procedures = values[2];
     severity = values[3];
-    console.log(animalType);
     drawMap();
     drawCountryPieCharts();
   });
@@ -66,29 +65,26 @@ function drawMap() {
     // make projection bigger
     .scale(700);
   let path = d3.geoPath().projection(projection);
-  console.log(animalType);
 
   // find array where 'ANIMAL TYPE' is 'TOTALS'
   totals = animalType.find((d) => d["ANIMAL TYPE"] == "TOTALS");
-
   // convert all numbers on totals to integers
+  totals2 = {};
   for (let key in totals) {
-    if (key != "ANIMAL TYPE") {
+    if (key != "ANIMAL TYPE" || key != "TOTAL") {
       // remove commas from numbers
-      totals[key] = parseInt(totals[key].replace(/,/g, ""));
+      totals2[key] = parseInt(totals[key].replace(/,/g, ""));
       // if number is NaN, set it to 0
-      if (isNaN(totals[key])) {
-        totals[key] = 0;
+      if (isNaN(totals2[key])) {
+        totals2[key] = 0;
       }
     }
   }
-  console.log(totals);
+  console.log(totals2);
   // find the extent of the totals
-  // let extent = d3.extent(Object.values(totals).slice(1));
-  // console.log(extent);
-  // console.log(extent);
+  let extent = d3.extent(Object.values(totals2));
+  var colorScale = d3.scaleSequential(d3.interpolateOrRd).domain(extent);
   // if (colorchoice == "orange") {
-  //   var colorScale = d3.scaleSequential(d3.interpolateOrRd).domain(extent);
   // } else {
   //   var colorScale = d3.scaleSequential(d3.interpolateBlues).domain(extent);
   // }
@@ -105,11 +101,9 @@ function drawMap() {
     })
     .attr("class", "countrymap")
     .style("fill", (d) => {
-      //   let val = popData.filter((p) => {
-      //     return p["GCT_STUB.target-geo-id"] == d.properties.GEO_ID;
-      //   })[0]["Density per square mile of land area"];
-      //   if (isNaN(val)) return "grey";
-      //   return colorScale(val);
+      let abbreviations = audict[d.properties.STATE_NAME];
+      let value = totals2[abbreviations];
+      return colorScale(value);
       return "grey";
     })
     .style("stroke", drawborder ? "black" : "none")
@@ -117,9 +111,13 @@ function drawMap() {
       //   let val = popData.filter((p) => {
       //     return p["GCT_STUB.target-geo-id"] == d.properties.GEO_ID;
       //   })[0]["Density per square mile of land area"];
+      // if ( == NaN) {
+      //   // make the mouse unclickable
+      //   d3.select(this).style("pointer-events", "none");
+      //   return;
+      // }
       if (drawborder)
         d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
-      console.log(d);
       mapttstring = `State: ${d.properties.STATE_NAME}`;
       tooltip.transition().duration(50).style("opacity", 1);
     })
@@ -135,7 +133,11 @@ function drawMap() {
       tooltip.transition().duration("50").style("opacity", 0);
     })
     .on("click", function (d, i) {
-      drawPieCharts(d.properties.STATE_NAME);
+      let abbreviations = audict[d.properties.STATE_NAME];
+      console.log(totals2[abbreviations]);
+      if (totals2[abbreviations] != 0) {
+        drawPieCharts(d.properties.STATE_NAME);
+      }
     });
 
   // draw the legend for the map
@@ -180,7 +182,7 @@ function drawMap() {
 }
 
 function togglePieChart() {
-    drawCountryPieCharts();
+  drawCountryPieCharts();
 }
 
 function togglecolor() {
@@ -197,41 +199,38 @@ function toggleborder() {
   drawMap();
 }
 
-function drawCountryPieCharts()
-{
-    let countryDataAT = [];
-    let countryDataProced = [];
-    let countryDataPurp = [];
-    console.log("BROOO");
-    // for each animal in animalType save the data for all of Australia
-    animalType.forEach((d) => {
-      // if the animal type is'TOTALS' exit out of the loop
-      if (d["ANIMAL TYPE"] == "TOTALS") return;
-      // find the total value
-      let totalVal = d["TOTAL"];
-      totalVal = parseInt(totalVal.replace(/,/g, ""));
-      // if the value is not a number, set it to 0
-      if (isNaN(totalVal)) totalVal = 0;
-      countryDataAT.push({
-        animal: d["ANIMAL TYPE"],
-        value: totalVal,
-      });
+function drawCountryPieCharts() {
+  let countryDataAT = [];
+  let countryDataProced = [];
+  let countryDataPurp = [];
+  // for each animal in animalType save the data for all of Australia
+  animalType.forEach((d) => {
+    // if the animal type is'TOTALS' exit out of the loop
+    if (d["ANIMAL TYPE"] == "TOTALS") return;
+    // find the total value
+    let totalVal = d["TOTAL"];
+    totalVal = parseInt(totalVal.replace(/,/g, ""));
+    // if the value is not a number, set it to 0
+    if (isNaN(totalVal)) totalVal = 0;
+    countryDataAT.push({
+      animal: d["ANIMAL TYPE"],
+      value: totalVal,
     });
-    procedures.forEach((d) => {
-      // if the procedure is 'TOTALS' exit out of the loop
-      if (d["SEVERITY OF PROCEDURE"] == "TOTALS") return;
-      // find the total value
-      let totalVal2 = d["TOTAL"];
-      totalVal2 = parseInt(totalVal2.replace(/,/g, ""));
-      // if the value is not a number, set it to 0
-      if (isNaN(totalVal2)) totalVal2 = 0;
-      countryDataProced.push({
-        animal: d["SEVERITY OF PROCEDURE"],
-        value: totalVal2,
-      });
+  });
+  procedures.forEach((d) => {
+    // if the procedure is 'TOTALS' exit out of the loop
+    if (d["SEVERITY OF PROCEDURE"] == "TOTALS") return;
+    // find the total value
+    let totalVal2 = d["TOTAL"];
+    totalVal2 = parseInt(totalVal2.replace(/,/g, ""));
+    // if the value is not a number, set it to 0
+    if (isNaN(totalVal2)) totalVal2 = 0;
+    countryDataProced.push({
+      animal: d["SEVERITY OF PROCEDURE"],
+      value: totalVal2,
     });
-    severity.forEach((d) => {
-    console.log(d);
+  });
+  severity.forEach((d) => {
     // if the purpose is 'TOTALS'
     if (d["PURPOSE "] == "TOTALS") return;
     // find the total value
@@ -247,20 +246,34 @@ function drawCountryPieCharts()
   });
   var piechartdiv = d3.select("#piecharts");
   piechartdiv.selectAll("*").remove();
-  drawPieChart(piechartdiv, countryDataAT, "Animal");
-  drawPieChart(piechartdiv, countryDataProced, "Purpose");
-  drawPieChart(piechartdiv, countryDataPurp, "Severity");
-  console.log(countryDataAT);
+  drawPieChart(
+    piechartdiv,
+    countryDataAT,
+    "Animal",
+    `Animal Type Teset in Australia in ${curYear}`
+  );
+  drawPieChart(
+    piechartdiv,
+    countryDataProced,
+    "Purpose",
+    `Purpose of Animal Testing in Australia in ${curYear}`
+  );
+  drawPieChart(
+    piechartdiv,
+    countryDataPurp,
+    "Severity",
+    `Severity of Animal Testing in Australia in ${curYear}`
+  );
 }
 
 // Add titles for the pie Charts
-const para = document.createElement("p");
-const node = document.createTextNode("This is new.");
-para.appendChild(node);
+// const para = document.createElement("p");
+// const node = document.createTextNode("This is new.");
+// para.appendChild(node);
 
-const element = document.getElementById("div1");
-const child = document.getElementById("p1");
-element.insertBefore(para, child);
+// const element = document.getElementById("div1");
+// const child = document.getElementById("p1");
+// element.insertBefore(para, child);
 
 function drawPieCharts(state) {
   // draw a pie chart for the selected state
@@ -305,7 +318,6 @@ function drawPieCharts(state) {
     });
   });
   severity.forEach((d) => {
-    console.log(d);
     // if the purpose is not 'TOTALS'
     if (d["PURPOSE "] == "TOTALS") return;
     // get the data for the state
@@ -321,22 +333,42 @@ function drawPieCharts(state) {
     });
   });
   piechartdiv.selectAll("*").remove();
-  drawPieChart(piechartdiv, stateData, "Animal");
-  drawPieChart(piechartdiv, purposeData, "Purpose");
-  drawPieChart(piechartdiv, severityData, "Severity");
+  drawPieChart(
+    piechartdiv,
+    stateData,
+    "Animal",
+    `Animal Types Tested in ${state} in ${curYear}`
+  );
+  drawPieChart(
+    piechartdiv,
+    purposeData,
+    "Purpose",
+    `Purpose of Testing in ${state} in ${curYear}`
+  );
+  drawPieChart(
+    piechartdiv,
+    severityData,
+    "Severity",
+    `Severity of Testing in ${state} in ${curYear}`
+  );
   // draw pie chart in the #piechart svg
   // set the dimensions and margins of the graph
 }
 
-function drawPieChart(piechartdiv, stateData, n) {
-  console.log(n, stateData);
+function drawPieChart(piechartdiv, stateData, n, m) {
+  // create a div for the pie chart and make the div a child of the piechartdiv
+  // make the div a column flex container with a title on top and the pie chart on the bottom
+
+  var newdiv = piechartdiv.append("div").attr("class", "piechartdiv");
+  console.log(m);
+  newdiv.append("h3").text(m);
   var width = 500;
   var height = 500;
   var margin = 40;
 
   // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
   var radius = Math.min(width, height) / 2 - margin;
-  piechartsvg = piechartdiv
+  piechartsvg = newdiv
     .append("svg")
     .attr("width", width)
     .attr("height", height)
@@ -350,9 +382,7 @@ function drawPieChart(piechartdiv, stateData, n) {
   });
 
   var arc_generator = d3.arc().innerRadius(0).outerRadius(radius);
-  console.log();
   data_ready = pie(stateData);
-  console.log(data_ready);
   piechartsvg
     .selectAll("mySlices")
     .data(data_ready)
@@ -367,7 +397,6 @@ function drawPieChart(piechartdiv, stateData, n) {
     .style("opacity", 0.7)
     .on("mouseover", function (d, i) {
       d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
-      console.log(d);
       mapttstring = `${n}: ${d.data.animal}`;
       // calculate the percentage of the total
       let total = 0;
@@ -419,7 +448,6 @@ function drawSlider() {
   var dataTime = d3.range(0, 5).map(function (d) {
     return new Date(2013 + d, 1, 1);
   });
-  console.log(dataTime);
 
   var sliderTime = d3
     .sliderBottom()

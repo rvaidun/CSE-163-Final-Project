@@ -36,3 +36,10 @@ body {
         flex-direction: column;
     }
 }
+
+/* make piechart div a column flexbox and align items in the center */
+.piechartdiv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

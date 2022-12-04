@@ -1,4 +1,4 @@
-TYPE OF ANIMALS,VIC,NSW,SA,TAS,QLD,ACT,WA,NT,TOTAL
+ANIMAL TYPE,VIC,NSW,SA,TAS,QLD,ACT,WA,NT,TOTAL
 Mouse,"434,262","976,525",n/a,"4,287",n/a,n/a,"608,760",n/a,"2,023,834"
 Rat,"26,666","36,522",n/a,721,n/a,n/a,"49,249",n/a,"113,158"
 Guinea Pig,"5,160","2,427",n/a,,n/a,n/a,4,n/a,"7,591"

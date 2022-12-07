@@ -362,9 +362,9 @@ function drawPieChart(piechartdiv, stateData, n, m) {
   var newdiv = piechartdiv.append("div").attr("class", "piechartdiv");
   console.log(m);
   newdiv.append("h3").text(m);
-  var width = 500;
-  var height = 500;
-  var margin = 40;
+  var width = 1300;
+  var height = 700;
+  var margin = 100;
 
   // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
   var radius = Math.min(width, height) / 2 - margin;
@@ -422,25 +422,51 @@ function drawPieChart(piechartdiv, stateData, n, m) {
       //Makes the new div disappear:
       tooltip.transition().duration(50).style("opacity", 0);
     });
+    
+  var outerArc = d3.arc()
+  .innerRadius(radius * 0.9)
+  .outerRadius(radius * 0.9)
 
   piechartsvg
     .selectAll("mySlices")
     .data(data_ready)
     .enter()
-    .append("text")
-    .text(function (d) {
-      if (d.endAngle - d.startAngle < 0.1) return "";
-      let value = d.data.value.toLocaleString();
-      return `${value} ${d.data.animal}`;
+    .append('polyline')
+    .attr("stroke", "black")
+    .style("fill", "none")
+    .attr("stroke-width", 1)
+    .attr('points', function(d) {
+      if (d.endAngle - d.startAngle < 0.14) return "";
+      var posA = arc_generator.centroid(d) // line insertion in the slice
+      var posB = outerArc.centroid(d) // line break: we use the other arc generator that has been built only for that
+      var posC = outerArc.centroid(d); // Label position = almost the same as posB
+      var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2 // we need the angle to see if the X position will be at the extreme right or extreme left
+      posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1); // multiply by 1 or -1 to put it on the right or on the left
+      return [posA, posB, posC]
     })
-    .attr("transform", function (d) {
-      // return "translate(" + arc_generator.centroid(d) + ")";
-      // if text doesn't fit, don't show it
-      // rotate the text 45 degrees
-      return "translate(" + arc_generator.centroid(d) + ")";
+    
+    piechartsvg
+      .selectAll("mySlices")
+      .data(data_ready)
+      .enter()
+      .append('text')
+      .text(function (d) {
+        if (d.endAngle - d.startAngle < 0.14) return "";
+        let value = d.data.value.toLocaleString();
+        return `${value} ${d.data.animal}`;
+      })
+      .attr('transform', function(d) {
+        var pos = outerArc.centroid(d);
+        var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
+        pos[0] = radius * 0.99 * (midangle < Math.PI ? 1 : -1);
+        return 'translate(' + pos + ')';
+      })
+      .style('text-anchor', function(d) {
+        var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
+        return (midangle < Math.PI ? 'start' : 'end')
     })
-    .style("text-anchor", "middle")
-    .style("font-size", 13);
+    .style("font-size", 11);
+ 
 }
 
 function drawSlider() {

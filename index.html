@@ -31,17 +31,19 @@
         gives a richer picture of why countries decide to test on animals.
       </p>
       <hr style="width: 100%" />
-      <button onclick="togglePieChart()">Australia Data</button> -->
-      <!-- <button onclick="togglecolor()">Toggle Color</button> -->
-      <!-- <button onclick="toggleborder()">Toggle Border</button> -->
-      <div class="mapslider">
-        <div class="slider">
-          <!-- <div class="col-sm-2"><p id="value-time"></p></div> -->
-          <div class="col-sm"><div id="slider-time"></div></div>
+      <div class="map-pie">
+        <!-- <button onclick="togglecolor()">Toggle Color</button> -->
+        <!-- <button onclick="toggleborder()">Toggle Border</button> -->
+        <div class="mapslider">
+          <button onclick="togglePieChart()">Australia Data</button>
+
+          <div class="slider">
+            <div class="col-sm"><div id="slider-time"></div></div>
+          </div>
+          <svg id="dataviz"></svg>
         </div>
-        <svg id="dataviz"></svg>
+        <div id="piecharts" class="piecharts"></div>
       </div>
-      <div id="piecharts" class="piecharts"></div>
       <div class="tooltip" style="opacity: 0"></div>
       <!-- Create a button that that calls the togglecolor function -->
       <div class="credits" style="font-size: 12px">

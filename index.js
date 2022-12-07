@@ -5,7 +5,7 @@ var animalType, procedures, severity, totals, totals2;
 var colorchoice = "orange";
 var drawborder = true;
 var margin = { left: 80, right: 80, top: 50, bottom: 50 };
-var curYear = 2015;
+var curYear = 2017;
 
 let audict = {
   Victoria: "VIC",
@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", function () {
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
   // Load both files before doing anything else
+
+  // // scale map svg down
+  // mapSvg.attr("transform", "scale(0.8)");
   drawSlider();
 
   getDataandDraw();
@@ -361,7 +364,7 @@ function drawPieChart(piechartdiv, stateData, n, m) {
 
   var newdiv = piechartdiv.append("div").attr("class", "piechartdiv");
   console.log(m);
-  newdiv.append("h3").text(m);
+  newdiv.append("h2").text(m);
   var width = 1300;
   var height = 700;
   var margin = 100;
@@ -422,51 +425,51 @@ function drawPieChart(piechartdiv, stateData, n, m) {
       //Makes the new div disappear:
       tooltip.transition().duration(50).style("opacity", 0);
     });
-    
-  var outerArc = d3.arc()
-  .innerRadius(radius * 0.9)
-  .outerRadius(radius * 0.9)
+
+  var outerArc = d3
+    .arc()
+    .innerRadius(radius * 0.9)
+    .outerRadius(radius * 0.9);
 
   piechartsvg
     .selectAll("mySlices")
     .data(data_ready)
     .enter()
-    .append('polyline')
+    .append("polyline")
     .attr("stroke", "black")
     .style("fill", "none")
     .attr("stroke-width", 1)
-    .attr('points', function(d) {
+    .attr("points", function (d) {
       if (d.endAngle - d.startAngle < 0.14) return "";
-      var posA = arc_generator.centroid(d) // line insertion in the slice
-      var posB = outerArc.centroid(d) // line break: we use the other arc generator that has been built only for that
+      var posA = arc_generator.centroid(d); // line insertion in the slice
+      var posB = outerArc.centroid(d); // line break: we use the other arc generator that has been built only for that
       var posC = outerArc.centroid(d); // Label position = almost the same as posB
-      var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2 // we need the angle to see if the X position will be at the extreme right or extreme left
+      var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2; // we need the angle to see if the X position will be at the extreme right or extreme left
       posC[0] = radius * 0.95 * (midangle < Math.PI ? 1 : -1); // multiply by 1 or -1 to put it on the right or on the left
-      return [posA, posB, posC]
+      return [posA, posB, posC];
+    });
+
+  piechartsvg
+    .selectAll("mySlices")
+    .data(data_ready)
+    .enter()
+    .append("text")
+    .text(function (d) {
+      if (d.endAngle - d.startAngle < 0.14) return "";
+      let value = d.data.value.toLocaleString();
+      return `${value} ${d.data.animal}`;
     })
-    
-    piechartsvg
-      .selectAll("mySlices")
-      .data(data_ready)
-      .enter()
-      .append('text')
-      .text(function (d) {
-        if (d.endAngle - d.startAngle < 0.14) return "";
-        let value = d.data.value.toLocaleString();
-        return `${value} ${d.data.animal}`;
-      })
-      .attr('transform', function(d) {
-        var pos = outerArc.centroid(d);
-        var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
-        pos[0] = radius * 0.99 * (midangle < Math.PI ? 1 : -1);
-        return 'translate(' + pos + ')';
-      })
-      .style('text-anchor', function(d) {
-        var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
-        return (midangle < Math.PI ? 'start' : 'end')
+    .attr("transform", function (d) {
+      var pos = outerArc.centroid(d);
+      var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+      pos[0] = radius * 0.99 * (midangle < Math.PI ? 1 : -1);
+      return "translate(" + pos + ")";
     })
-    .style("font-size", 11);
- 
+    .style("text-anchor", function (d) {
+      var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2;
+      return midangle < Math.PI ? "start" : "end";
+    })
+    .style("font-size", 16);
 }
 
 function drawSlider() {

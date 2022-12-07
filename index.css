@@ -15,7 +15,7 @@ body {
 }
 
 /* make .mapslider a flexbox so everything is on the same row */
-.mapslider {
+.map-pie {
     display: flex;
     flex-direction: row;
 }
@@ -27,7 +27,7 @@ body {
 
 .piecharts {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-around;
 }
 /* if the screen is too small then let piecharts become a column */

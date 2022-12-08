@@ -363,8 +363,8 @@ function drawPieChart(piechartdiv, stateData, n, m) {
   // make the div a column flex container with a title on top and the pie chart on the bottom
 
   var newdiv = piechartdiv.append("div").attr("class", "piechartdiv");
-  console.log(m);
-  newdiv.append("h2").text(m);
+  // console.log(m);
+  // newdiv.append("h2").text(m);
   var width = 1300;
   var height = 700;
   var margin = 100;
@@ -470,6 +470,17 @@ function drawPieChart(piechartdiv, stateData, n, m) {
       return midangle < Math.PI ? "start" : "end";
     })
     .style("font-size", 16);
+
+  // create a title on the pie chart
+  piechartsvg
+    .append("text")
+    .attr("x", 0)
+    .attr("y", -height / 2 + 70)
+    .attr("text-anchor", "middle")
+    .style("font-size", "22px")
+    .text(m)
+    .style("fill", "black")
+    .style("font-weight", "bold");
 }
 
 function drawSlider() {

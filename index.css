@@ -21,7 +21,6 @@ body {
 }
 /* credits center it horizontally */
 .credits {
-    text-align: center;
     background-color: lightblue;
 }
 
@@ -42,4 +41,17 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.header-row {
+    display: flex;
+    /* add margin and padding between items */
+    justify-content: space-between;
+}
+
+.credits-under {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px;
+    margin-right: 50px;
 }

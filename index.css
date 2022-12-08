@@ -17,7 +17,8 @@ body {
 /* make .mapslider a flexbox so everything is on the same row */
 .map-pie {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    align-items: center;
 }
 /* credits center it horizontally */
 .credits {

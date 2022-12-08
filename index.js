@@ -106,21 +106,21 @@ function drawMap() {
     .style("fill", (d) => {
       let abbreviations = audict[d.properties.STATE_NAME];
       let value = totals2[abbreviations];
+      if (value == 0) {
+        return "grey";
+      }
       return colorScale(value);
-      return "grey";
     })
     .style("stroke", drawborder ? "black" : "none")
     .on("mouseover", function (d, i) {
-      //   let val = popData.filter((p) => {
-      //     return p["GCT_STUB.target-geo-id"] == d.properties.GEO_ID;
-      //   })[0]["Density per square mile of land area"];
-      // if ( == NaN) {
-      //   // make the mouse unclickable
-      //   d3.select(this).style("pointer-events", "none");
-      //   return;
-      // }
-      if (drawborder)
+      let abbreviations = audict[d.properties.STATE_NAME];
+      let value = totals2[abbreviations];
+
+      if (value == 0) {
+        d3.select(this).style("stroke", "red").style("stroke-width", 4);
+      } else {
         d3.select(this).style("stroke", "cyan").style("stroke-width", 4);
+      }
       mapttstring = `State: ${d.properties.STATE_NAME}`;
       tooltip.transition().duration(50).style("opacity", 1);
     })
@@ -258,14 +258,14 @@ function drawCountryPieCharts() {
   drawPieChart(
     piechartdiv,
     countryDataProced,
-    "Purpose",
-    `Purpose of Animal Testing in Australia in ${curYear}`
+    "Severity",
+    `Severity of Animal Testing in Australia in ${curYear}`
   );
   drawPieChart(
     piechartdiv,
     countryDataPurp,
-    "Severity",
-    `Severity of Animal Testing in Australia in ${curYear}`
+    "Purpose",
+    `Purpose of Animal Testing in Australia in ${curYear}`
   );
 }
 
@@ -345,14 +345,14 @@ function drawPieCharts(state) {
   drawPieChart(
     piechartdiv,
     purposeData,
-    "Purpose",
-    `Purpose of Testing in ${state} in ${curYear}`
+    "Severity",
+    `Severity of Testing in ${state} in ${curYear}`
   );
   drawPieChart(
     piechartdiv,
     severityData,
-    "Severity",
-    `Severity of Testing in ${state} in ${curYear}`
+    "Purpose",
+    `Purpose of Testing in ${state} in ${curYear}`
   );
   // draw pie chart in the #piechart svg
   // set the dimensions and margins of the graph
